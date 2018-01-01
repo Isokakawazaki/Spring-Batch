@@ -1,14 +1,14 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-  xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
-  <modelVersion>4.0.0</modelVersion>
+	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+	<modelVersion>4.0.0</modelVersion>
 
-  <groupId>batch.project</groupId>
-  <artifactId>transformer</artifactId>
-  <version>0.0.1-SNAPSHOT</version>
-  <packaging>jar</packaging>
+	<groupId>batch.project</groupId>
+	<artifactId>transformer</artifactId>
+	<version>0.0.1-SNAPSHOT</version>
+	<packaging>jar</packaging>
 
-  <name>transformer</name>
-  <url>http://maven.apache.org</url>
+	<name>transformer</name>
+	<url>http://maven.apache.org</url>
 
 	<properties>
 		<jdk.version>1.7</jdk.version>
@@ -73,8 +73,14 @@
 			<version>${junit.version}</version>
 			<scope>test</scope>
 		</dependency>
+		<!-- Dom » 2.3.0-jaxb-1.0.6 -->
+		<dependency>
+			<groupId>org.w3c</groupId>
+			<artifactId>dom</artifactId>
+			<version>2.3.0-jaxb-1.0.6</version>
+		</dependency>
 	</dependencies>
-	
+
 	<build>
 		<finalName>spring-batch-transformer</finalName>
 		<plugins>

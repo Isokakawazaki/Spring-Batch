@@ -4,9 +4,14 @@ import java.io.BufferedReader;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileReader;
+import java.io.IOException;
 import java.io.OutputStreamWriter;
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Set;
 import java.util.StringTokenizer;
 
 import javax.xml.parsers.DocumentBuilder;
@@ -21,105 +26,67 @@ import javax.xml.transform.stream.StreamResult;
 
 import org.springframework.batch.item.ParseException;
 import org.springframework.batch.item.UnexpectedInputException;
+import org.w3c.dom.Attr;
+import org.w3c.dom.CDATASection;
+import org.w3c.dom.Comment;
+import org.w3c.dom.DOMConfiguration;
+import org.w3c.dom.DOMException;
+import org.w3c.dom.DOMImplementation;
 import org.w3c.dom.Document;
+import org.w3c.dom.DocumentFragment;
+import org.w3c.dom.DocumentType;
 import org.w3c.dom.Element;
+import org.w3c.dom.EntityReference;
+import org.w3c.dom.NamedNodeMap;
+import org.w3c.dom.Node;
+import org.w3c.dom.NodeList;
+import org.w3c.dom.ProcessingInstruction;
+import org.w3c.dom.Text;
+import org.w3c.dom.UserDataHandler;
 
 public class CustomItemCSVToXMLFileTransformer {
-	
-	private void csvToXmlFileTransformer(String csvFilePath) throws UnexpectedInputException, ParseException, Exception {
+
+	public void csvToXmlFileTransformer(String csvFilePath)
+			throws UnexpectedInputException, ParseException, Exception, IOException {
+
+		DocumentBuilderFactory domFactory = DocumentBuilderFactory.newInstance();
+		DocumentBuilder domBuilder = domFactory.newDocumentBuilder();
+
+		Document newDoc = domBuilder.newDocument();
+
+		// Root element
+		Element rootElement = newDoc.createElement("Sites");
+		newDoc.appendChild(rootElement);
+
+		File csvFile = new File(csvFilePath);
+		BufferedReader reader = new BufferedReader(new FileReader(csvFile));
 		
-		List<String> headers = new ArrayList<String>(5);
+		List<String> nodesName = new ArrayList<>();
+		List<String> nodesAttribute = new ArrayList<>();
 
-		File file = new File(csvFilePath);
-		BufferedReader reader = null;
+		String text = null;
 
-		try {
-
-		    DocumentBuilderFactory domFactory = DocumentBuilderFactory.newInstance();
-		    DocumentBuilder domBuilder = domFactory.newDocumentBuilder();
-
-		    Document newDoc = domBuilder.newDocument();
-		    // Root element
-		    Element rootElement = newDoc.createElement("XMLCreators");
-		    newDoc.appendChild(rootElement);
-
-		    reader = new BufferedReader(new FileReader(file));
-		    int line = 0;
-
-		    String text = null;
-		    while ((text = reader.readLine()) != null) {
-
-		        StringTokenizer st = new StringTokenizer(text, " ", false);    
-		        String[] rowValues = new String[st.countTokens()];
-		        int index = 0;
-		        while (st.hasMoreTokens()) {
-
-		            String next = st.nextToken();
-		            rowValues[index++] = next;
-
-		        }
-
-		        if (line == 0) { // Header row
-		            for (String col : rowValues) {
-		                headers.add(col);
-		            }
-		        } else { // Data row
-		            Element rowElement = newDoc.createElement("row");
-		            rootElement.appendChild(rowElement);
-		            for (int col = 0; col < headers.size(); col++) {
-		                String header = headers.get(col);
-		                String value = null;
-
-		                if (col < rowValues.length) {
-		                    value = rowValues[col];
-		                } else {
-		                    // ?? Default value
-		                    value = "";
-		                }
-
-		                Element curElement = newDoc.createElement(header);
-		                curElement.appendChild(newDoc.createTextNode(value));
-		                rowElement.appendChild(curElement);
-		            }
-		        }
-		        line++;
-		    }
-
-		    ByteArrayOutputStream baos = null;
-		    OutputStreamWriter osw = null;
-
-		    try {
-		        baos = new ByteArrayOutputStream();
-		        osw = new OutputStreamWriter(baos);
-
-		        TransformerFactory tranFactory = TransformerFactory.newInstance();
-		        Transformer aTransformer = tranFactory.newTransformer();
-		        aTransformer.setOutputProperty(OutputKeys.INDENT, "yes");
-		        aTransformer.setOutputProperty(OutputKeys.METHOD, "xml");
-		        aTransformer.setOutputProperty("{http://xml.apache.org/xslt}indent-amount", "4");
-
-		        Source src = new DOMSource(newDoc);
-		        Result result = new StreamResult(osw);
-		        aTransformer.transform(src, result);
-
-		        osw.flush();
-		        System.out.println(new String(baos.toByteArray()));
-		    } catch (Exception exp) {
-		        exp.printStackTrace();
-		    } finally {
-		        try {
-		            osw.close();
-		        } catch (Exception e) {
-		        }
-		        try {
-		            baos.close();
-		        } catch (Exception e) {
-		        }
-		    }
-		} catch (Exception e) {
-		    e.printStackTrace();
+		while ((text = reader.readLine()) != null) {
+			StringTokenizer st = new StringTokenizer(reader.readLine(), ", ", false);
+			int counter = 0;
+			if (counter == 0) {
+				String strToken;
+				while (st.hasMoreTokens()) {
+					strToken = st.nextToken().toString();
+					
+					nodesName.add(strToken.substring(strToken.indexOf("_") + 1));
+					nodesAttribute.add(strToken.substring(0, st.nextToken().toString().indexOf("_")));
+				}
+				counter++;
+			}
+			
+			if (nodesName != null && nodesAttribute != null) {
+				int i = 0;
+				//use for ?
+				while (nodesName.iterator().hasNext()) {
+					Element firstNode = newDoc.createElement(nodesName.stream().distinct().toString());
+				}
+			}
 		}
-		
 	}
-
 }
