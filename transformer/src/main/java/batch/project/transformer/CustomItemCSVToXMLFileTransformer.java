@@ -5,6 +5,7 @@ import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
+import java.io.LineNumberReader;
 import java.io.OutputStreamWriter;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -24,6 +25,7 @@ import javax.xml.transform.TransformerFactory;
 import javax.xml.transform.dom.DOMSource;
 import javax.xml.transform.stream.StreamResult;
 
+import org.apache.commons.lang.ArrayUtils;
 import org.springframework.batch.item.ParseException;
 import org.springframework.batch.item.UnexpectedInputException;
 import org.w3c.dom.Attr;
@@ -60,14 +62,12 @@ public class CustomItemCSVToXMLFileTransformer {
 
 		File csvFile = new File(csvFilePath);
 		BufferedReader reader = new BufferedReader(new FileReader(csvFile));
+		LineNumberReader lineNumberReader = new LineNumberReader(reader) ;
 		
-		List<String> nodesName = new ArrayList<>();
-		List<String> nodesAttribute = new ArrayList<>();
-
-		String text = null;
-
-		while ((text = reader.readLine()) != null) {
+		while ((reader.readLine()) != null) {
 			StringTokenizer st = new StringTokenizer(reader.readLine(), ", ", false);
+			List<String> nodesName = new ArrayList<>();
+			List<String> nodesAttribute = new ArrayList<>();
 			int counter = 0;
 			if (counter == 0) {
 				String strToken;
@@ -82,11 +82,28 @@ public class CustomItemCSVToXMLFileTransformer {
 			
 			if (nodesName != null && nodesAttribute != null) {
 				int i = 0;
+				String initialNodeName = null;
+				Element node = null;
 				//use for ?
-				while (nodesName.iterator().hasNext()) {
-					Element firstNode = newDoc.createElement(nodesName.stream().distinct().toString());
+				for(String nodeName : nodesName) {
+					if (!initialNodeName.equals(nodeName)){
+						node = newDoc.createElement(nodeName);
+						initialNodeName = nodeName;
+					}
+					else {
+						node.setAttribute(nodesAttribute.get(i), setAttributeValue(lineNumberReader, i));
+						i++;
+					}
 				}
 			}
 		}
+	}
+
+	private String setAttributeValue(LineNumberReader reader, int i) throws IOException {
+		List<String> attributesAndValues = new ArrayList<>();
+		if (reader.getLineNumber()>=1) {
+			attributesAndValues.add(new StringTokenizer(reader.readLine(), ", ", false).nextToken());
+		}
+		return attributesAndValues.get(i);
 	}
 }
